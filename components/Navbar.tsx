@@ -102,6 +102,16 @@ export default function Navbar() {
           >
             Leaderboard
           </Link>
+          <Link
+            href="/stock-market"
+            className={`px-3 py-1.5 rounded-full border transition ${
+              isActive("/stock-market")
+                ? "bg-white/10 text-white border-white/20 shadow-sm"
+                : "text-gray-300 hover:text-white hover:bg-white/10 border-transparent"
+            }`}
+          >
+            Stock Market
+          </Link>
         </nav>
 
         {/* XP and Streak */}
