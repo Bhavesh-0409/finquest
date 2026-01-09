@@ -40,20 +40,20 @@ const GAME_DATA: Question[] = [
 ];
 
 // Flatten all answers into individual rounds
-const getAllRounds = (): { 
-  sentence: string; 
-  answer: string; 
+const getAllRounds = (): {
+  sentence: string;
+  answer: string;
   explanation: string;
-  roundIndex: number; 
+  roundIndex: number;
   totalRounds: number;
   questionIndex: number;
   answerIndex: number;
 }[] => {
-  const rounds: { 
-    sentence: string; 
-    answer: string; 
+  const rounds: {
+    sentence: string;
+    answer: string;
     explanation: string;
-    roundIndex: number; 
+    roundIndex: number;
     totalRounds: number;
     questionIndex: number;
     answerIndex: number;
@@ -90,7 +90,7 @@ interface MoneyHangmanProps {
 
 export default function MoneyHangman({ onXpChange }: MoneyHangmanProps) {
   const allRounds = getAllRounds();
-  
+
   // Current game state
   const [currentRoundIndex, setCurrentRoundIndex] = useState(0);
   const [guessedLetters, setGuessedLetters] = useState<Set<string>>(new Set());
@@ -130,7 +130,7 @@ export default function MoneyHangman({ onXpChange }: MoneyHangmanProps) {
   useEffect(() => {
     if (gameStatus === 'playing' && remainingAttempts <= 0) {
       setGameStatus('lost');
-      
+
       // Apply XP penalty only once when failing
       if (!hasAppliedPenalty) {
         onXpChange(-10);
@@ -145,13 +145,13 @@ export default function MoneyHangman({ onXpChange }: MoneyHangmanProps) {
       setGameStatus('won');
       setShowSuccess(true);
       setFeedback('Correct!');
-      
+
       // Award completion bonus only once
       if (!hasAwardedCompletion) {
         onXpChange(20);
         setHasAwardedCompletion(true);
       }
-      
+
       // Show explanation automatically after word completion
       // Small delay to let success feedback display briefly
       setTimeout(() => {
@@ -170,7 +170,7 @@ export default function MoneyHangman({ onXpChange }: MoneyHangmanProps) {
   const handleGuess = useCallback((letter: string) => {
     // Normalize input to lowercase
     const normalizedLetter = letter.toLowerCase();
-    
+
     // Validate input: must be a single letter (a-z)
     if (!/^[a-z]$/.test(normalizedLetter)) {
       return;
@@ -236,7 +236,7 @@ export default function MoneyHangman({ onXpChange }: MoneyHangmanProps) {
       if (/^[a-z]$/.test(lowerKey)) {
         // Prevent default browser behavior
         event.preventDefault();
-        
+
         // Use shared guess handler
         handleGuess(lowerKey);
       }
@@ -294,31 +294,31 @@ export default function MoneyHangman({ onXpChange }: MoneyHangmanProps) {
     const sentence = currentRound.sentence;
     const questionData = GAME_DATA[currentRound.questionIndex];
     const blankPattern = /_{4,}/g;
-    
+
     // Find all blank positions using matchAll
     const blanks: RegExpMatchArray[] = [];
     const matches = sentence.matchAll(blankPattern);
     for (const match of matches) {
       blanks.push(match);
     }
-    
+
     if (blanks.length === 0) {
       return <p className="text-lg md:text-xl mb-6 text-center">{sentence}</p>;
     }
-    
+
     // Build sentence parts with previous answers filled in and current blank as hangman
     const parts: (string | JSX.Element)[] = [];
     let lastIndex = 0;
-    
+
     blanks.forEach((match, blankIndex) => {
       const blankStart = match.index!;
       const blankEnd = blankStart + match[0].length;
-      
+
       // Add text before this blank
       if (blankStart > lastIndex) {
         parts.push(sentence.substring(lastIndex, blankStart));
       }
-      
+
       // Add the blank or answer
       if (blankIndex === currentRound.answerIndex) {
         // Current blank - show hangman word
@@ -343,15 +343,15 @@ export default function MoneyHangman({ onXpChange }: MoneyHangmanProps) {
           </span>
         );
       }
-      
+
       lastIndex = blankEnd;
     });
-    
+
     // Add remaining text after last blank
     if (lastIndex < sentence.length) {
       parts.push(sentence.substring(lastIndex));
     }
-    
+
     return (
       <p className="text-lg md:text-xl mb-6 text-center leading-relaxed">
         {parts}
@@ -390,7 +390,7 @@ export default function MoneyHangman({ onXpChange }: MoneyHangmanProps) {
               {remainingAttempts} / {MAX_ATTEMPTS}
             </span>
           </p>
-          
+
           {feedback && gameStatus === 'playing' && (
             <p className={`text-lg font-semibold ${feedback === 'Correct!' ? 'text-green-400' : 'text-red-400'} animate-pulse`}>
               {feedback}
@@ -418,16 +418,14 @@ export default function MoneyHangman({ onXpChange }: MoneyHangmanProps) {
 
         {/* Explanation Panel - shown after word completion or failure */}
         {showExplanation && (
-          <div className={`mb-8 p-6 md:p-8 rounded-lg border-2 ${
-            gameStatus === 'won' 
-              ? 'bg-green-900/50 border-green-500' 
+          <div className={`mb-8 p-6 md:p-8 rounded-lg border-2 ${gameStatus === 'won'
+              ? 'bg-green-900/50 border-green-500'
               : 'bg-red-900/50 border-red-500'
-          }`}>
+            }`}>
             {/* Status Header */}
             <div className="text-center mb-4">
-              <h3 className={`text-2xl font-bold mb-2 ${
-                gameStatus === 'won' ? 'text-green-300' : 'text-red-300'
-              }`}>
+              <h3 className={`text-2xl font-bold mb-2 ${gameStatus === 'won' ? 'text-green-300' : 'text-red-300'
+                }`}>
                 {gameStatus === 'won' ? '✓ Correct!' : '✗ Incorrect'}
               </h3>
               <p className="text-lg text-gray-300 font-semibold">
@@ -456,11 +454,10 @@ export default function MoneyHangman({ onXpChange }: MoneyHangmanProps) {
               {currentRoundIndex < allRounds.length - 1 ? (
                 <button
                   onClick={handleContinue}
-                  className={`px-8 py-3 rounded-lg font-bold text-lg transition-colors shadow-lg ${
-                    gameStatus === 'won'
+                  className={`px-8 py-3 rounded-lg font-bold text-lg transition-colors shadow-lg ${gameStatus === 'won'
                       ? 'bg-green-600 hover:bg-green-700 text-white'
                       : 'bg-blue-600 hover:bg-blue-700 text-white'
-                  }`}
+                    }`}
                 >
                   Continue →
                 </button>
@@ -490,7 +487,7 @@ export default function MoneyHangman({ onXpChange }: MoneyHangmanProps) {
               const isGuessed = guessedLetters.has(letter);
               const isCorrect = currentRound.answer.includes(letter);
               // Disable buttons if guessed, not playing, explanation showing, or game is lost (before showing result)
-              const isDisabled = isGuessed || gameStatus !== 'playing' || showExplanation || (gameStatus === 'lost' && !showResult);
+              const isDisabled = isGuessed || gameStatus !== 'playing' || showExplanation;
 
               return (
                 <button
@@ -502,12 +499,11 @@ export default function MoneyHangman({ onXpChange }: MoneyHangmanProps) {
                     font-bold text-lg
                     rounded-lg
                     transition-all duration-200
-                    ${
-                      isDisabled
-                        ? isCorrect
-                          ? 'bg-green-700 text-green-200 cursor-not-allowed'
-                          : 'bg-gray-700 text-gray-500 cursor-not-allowed'
-                        : 'bg-gray-700 hover:bg-gray-600 hover:scale-110 active:scale-95 text-white'
+                    ${isDisabled
+                      ? isCorrect
+                        ? 'bg-green-700 text-green-200 cursor-not-allowed'
+                        : 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                      : 'bg-gray-700 hover:bg-gray-600 hover:scale-110 active:scale-95 text-white'
                     }
                   `}
                 >

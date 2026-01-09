@@ -1,17 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 
 import MapNode from "@/components/MapNode";
 import BossNode from "@/components/BossNode";
 import PathLine from "@/components/PathLine";
+import { updateStreak } from "@/lib/streak";
 
 type User = {
   name: string;
   email: string;
   character: string;
+  xp: number;
+  streak?: number;
+  lastLoginDate?: string | null;
 };
 
 const characterImages: Record<string, string> = {
@@ -39,17 +44,26 @@ export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null);
   const [checking, setChecking] = useState(true);
 
-  const currentLevel = 3; // 🔧 demo value
-  const xp = 120;
+  // 🔧 Demo progression: currently on level 3
+  const currentLevel = 3;
 
-  // 🔒 Protect dashboard
+  // 🔒 Protect dashboard and update streak
   useEffect(() => {
     const storedUser = localStorage.getItem("finstinct-user");
     if (!storedUser) {
       router.replace("/");
     } else {
-      setUser(JSON.parse(storedUser));
+      // Update streak on login
+      const { streak, isNewDay } = updateStreak();
+      const userData = JSON.parse(storedUser);
+      userData.streak = streak;
+      setUser(userData);
       setChecking(false);
+      
+      // Show streak notification if it's a new day
+      if (isNewDay && streak > 1) {
+        // Optional: Could show a toast notification here
+      }
     }
   }, [router]);
 
@@ -59,7 +73,7 @@ export default function Dashboard() {
     <div className="min-h-screen pt-20">
       {/* 🔝 TOP BAR */}
       <div className="fixed top-0 left-0 right-0 z-50 bg-black/60 backdrop-blur-md border-b border-white/10">
-        <div className="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between">
+        <div className="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between gap-6">
           {/* Player Info */}
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-800">
@@ -79,9 +93,30 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* XP */}
-          <div className="flex items-center gap-2 bg-yellow-400/90 text-black px-4 py-1.5 rounded-full font-bold shadow">
-            ⭐ {xp} XP
+          {/* Center Tabs */}
+          <nav className="flex items-center gap-4 text-sm font-medium">
+            <Link
+              href="/dashboard"
+              className="px-3 py-1.5 rounded-full bg-white/10 text-white border border-white/20 shadow-sm"
+            >
+              Dashboard
+            </Link>
+            <Link
+              href="/leaderboard"
+              className="px-3 py-1.5 rounded-full text-gray-300 hover:text-white hover:bg-white/10 border border-transparent"
+            >
+              Leaderboard
+            </Link>
+          </nav>
+
+          {/* XP and Streak */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 bg-yellow-400/90 text-black px-4 py-1.5 rounded-full font-bold shadow">
+              ⭐ {user.xp} XP
+            </div>
+            <div className="flex items-center gap-2 bg-orange-500/90 text-white px-4 py-1.5 rounded-full font-bold shadow">
+              🔥 {user.streak || 0} Day Streak
+            </div>
           </div>
 
           {/* Logout */}
@@ -108,30 +143,67 @@ export default function Dashboard() {
 
             {/* Levels */}
             <div className="flex flex-col items-center">
-              {module.levels.map((level, index) => (
-                <div
-                  key={level}
-                  className={`flex flex-col items-center ${
-                    index % 2 === 0 ? "ml-16" : "mr-16"
-                  }`}
-                >
-                  <MapNode
-                    label={String(level)}
-                    status={
-                      level < currentLevel
-                        ? "completed"
-                        : level === currentLevel
-                        ? "current"
-                        : "locked"
-                    }
-                    href={`/level/${level}`}
-                  />
-                  <PathLine />
-                </div>
-              ))}
+              <div className="relative w-[260px] flex flex-col items-stretch">
+                {module.levels.map((level, index) => {
+                  const isLast = index === module.levels.length - 1;
+                  const side = index % 2 === 0 ? "left" : "right";
+                  const nextSide = (index + 1) % 2 === 0 ? "left" : "right";
 
-              {/* Boss Fight */}
-              <BossNode href={`/boss/${module.id}`} />
+                  const status =
+                    level < currentLevel
+                      ? "completed"
+                      : level === currentLevel
+                      ? "current"
+                      : "locked";
+
+                  return (
+                    <Fragment key={level}>
+                      {/* Node row */}
+                      <div className="flex justify-between items-center">
+                        <div className="flex-1 flex justify-start">
+                          {side === "left" && (
+                            <MapNode
+                              label={String(level)}
+                              status={status}
+                              href={`/level/${level}`}
+                            />
+                          )}
+                        </div>
+                        <div className="flex-1 flex justify-end">
+                          {side === "right" && (
+                            <MapNode
+                              label={String(level)}
+                              status={status}
+                              href={`/level/${level}`}
+                            />
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Connector to next node */}
+                      {!isLast && (
+                        <div className="h-16">
+                          <PathLine
+                            status={status}
+                            fromSide={side}
+                            toSide={nextSide}
+                          />
+                        </div>
+                      )}
+                    </Fragment>
+                  );
+                })}
+
+                {/* Boss Fight */}
+                <div className="mt-6 flex justify-center">
+                  <BossNode
+                    href={`/boss/${module.id}`}
+                    locked={
+                      !module.levels.every((lvl) => lvl < currentLevel)
+                    }
+                  />
+                </div>
+              </div>
             </div>
           </div>
         ))}

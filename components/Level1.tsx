@@ -1,15 +1,36 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import MoneyHangman from './MoneyHangman';
 
 export default function Level1() {
   const [xp, setXp] = useState(0);
 
-  // Handle XP changes - ensure it never goes below 0
+  // Handle XP changes - update local state and localStorage
   // Memoized to prevent unnecessary re-renders in MoneyHangman
   const handleXpChange = useCallback((delta: number) => {
-    setXp(prev => Math.max(0, prev + delta));
+    setXp(prev => {
+      const newXp = Math.max(0, prev + delta);
+      
+      // Update XP in localStorage
+      const storedUser = localStorage.getItem('finstinct-user');
+      if (storedUser) {
+        const user = JSON.parse(storedUser);
+        user.xp = newXp;
+        localStorage.setItem('finstinct-user', JSON.stringify(user));
+      }
+      
+      return newXp;
+    });
+  }, []);
+
+  // Load initial XP from localStorage
+  useEffect(() => {
+    const storedUser = localStorage.getItem('finstinct-user');
+    if (storedUser) {
+      const user = JSON.parse(storedUser);
+      setXp(user.xp || 0);
+    }
   }, []);
 
   // Render the game immediately (no intro slides)

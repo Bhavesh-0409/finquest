@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 
 const characters = [
   { id: "explorer", label: "Explorer", image: "/characters/explorer.png" },
@@ -16,8 +17,11 @@ export default function Home() {
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [character, setCharacter] = useState<string | null>(null);
   const [checking, setChecking] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // 🔒 Auto-redirect if already logged in
   useEffect(() => {
@@ -31,15 +35,34 @@ export default function Home() {
 
   if (checking) return null; // prevent flicker
 
-  const canStart = Boolean(name && email && character);
+  const canStart = Boolean(name && email && password && character);
 
   const handleStart = () => {
-    if (!canStart) return;
+    if (!canStart || loading) return;
 
-    const user = { name, email, character };
-    localStorage.setItem("finstinct-user", JSON.stringify(user));
+    setLoading(true);
+    setError(null);
 
-    router.push("/dashboard");
+    try {
+      // Store user data in localStorage
+      const user = {
+        name,
+        email,
+        password, // Note: In production, never store passwords in localStorage
+        character: character!,
+        xp: 0,
+        streak: 0,
+        lastLoginDate: null,
+      };
+
+      localStorage.setItem("finstinct-user", JSON.stringify(user));
+      router.push("/dashboard");
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to create account"
+      );
+      setLoading(false);
+    }
   };
 
   return (
@@ -52,6 +75,12 @@ export default function Home() {
         <p className="text-center text-gray-300 mb-8">
           Learn money skills by playing
         </p>
+
+        {error && (
+          <div className="mb-4 p-3 bg-red-900/50 border border-red-500 rounded-lg text-red-300 text-sm">
+            {error}
+          </div>
+        )}
 
         {/* Name */}
         <div className="mb-4">
@@ -66,7 +95,7 @@ export default function Home() {
         </div>
 
         {/* Email */}
-        <div className="mb-6">
+        <div className="mb-4">
           <label className="block text-sm mb-1">Email</label>
           <input
             type="email"
@@ -75,6 +104,21 @@ export default function Home() {
             placeholder="you@example.com"
             className="w-full px-4 py-3 rounded-xl bg-gray-800 text-white outline-none focus:ring-2 focus:ring-green-400"
           />
+        </div>
+
+        {/* Password */}
+        <div className="mb-6">
+          <label className="block text-sm mb-1">Password</label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Choose a secure password"
+            className="w-full px-4 py-3 rounded-xl bg-gray-800 text-white outline-none focus:ring-2 focus:ring-green-400"
+          />
+          <p className="mt-1 text-xs text-gray-400">
+            This is just for this device; do not reuse important passwords.
+          </p>
         </div>
 
         {/* Character Selection */}
@@ -115,18 +159,31 @@ export default function Home() {
         {/* Start Button */}
         <button
           onClick={handleStart}
-          disabled={!canStart}
+          disabled={!canStart || loading}
           className={`
-            w-full py-4 rounded-full font-extrabold text-lg transition
+            w-full py-4 rounded-full font-extrabold text-lg transition mb-4
             ${
-              canStart
+              canStart && !loading
                 ? "bg-green-500 text-black shadow-[0_6px_0_#15803d] hover:translate-y-1"
                 : "bg-gray-600 text-gray-400 cursor-not-allowed"
             }
           `}
         >
-          Start Adventure 🚀
+          {loading ? "Creating Account..." : "Start Adventure 🚀"}
         </button>
+
+        {/* Login link */}
+        <div className="text-center">
+          <p className="text-sm text-gray-400">
+            Already have an account?{" "}
+            <Link
+              href="/login"
+              className="text-green-400 hover:text-green-300 font-semibold"
+            >
+              Sign in
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );
