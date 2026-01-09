@@ -59,7 +59,7 @@ export default function Dashboard() {
       userData.streak = streak;
       setUser(userData);
       setChecking(false);
-      
+
       // Show streak notification if it's a new day
       if (isNewDay && streak > 1) {
         // Optional: Could show a toast notification here
@@ -153,8 +153,8 @@ export default function Dashboard() {
                     level < currentLevel
                       ? "completed"
                       : level === currentLevel
-                      ? "current"
-                      : "locked";
+                        ? "current"
+                        : "locked";
 
                   return (
                     <Fragment key={level}>

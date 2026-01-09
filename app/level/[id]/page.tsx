@@ -7,7 +7,9 @@ import FlashCard from "./components/FlashCard";
 import Level1Game from "@/components/Level1";
 import Level3Game from "@/components/Level3";
 import Level4Game from "@/components/Level4";
-import { level1FlashCards } from "./data";
+import FixTheBudget from "@/components/FixTheBudget";
+import { level1FlashCards } from "./data/level1";
+import { level2Slides } from "./data/level2";
 
 export default function LevelPage({
   params,
@@ -17,11 +19,14 @@ export default function LevelPage({
   const router = useRouter();
   const currentLevel = parseInt(params.id);
   const nextLevel = currentLevel + 1;
+  const levelId = params.id;
 
   // Determine which game to show based on level
   const getGameComponent = () => {
     if (currentLevel === 1) {
       return <Level1Game />;
+    } else if (currentLevel === 2) {
+      return <FixTheBudget />;
     } else if (currentLevel === 3) {
       return <Level3Game />;
     } else if (currentLevel === 4) {
@@ -94,15 +99,34 @@ export default function LevelPage({
     );
   }
 
-  if (params.id !== "1") {
+  // Determine which slides to use based on level
+  const slides = levelId === "1" ? level1FlashCards : levelId === "2" ? level2Slides : null;
+
+  if (!slides) {
     return <p className="p-6">Level coming soon.</p>;
   }
 
   const [currentIndex, setCurrentIndex] = useState(0);
-  const totalSlides = level1FlashCards.length;
-  const currentSlide = level1FlashCards[currentIndex];
+  const totalSlides = slides.length;
+  const currentSlide = slides[currentIndex];
   const isLastSlide = currentIndex === totalSlides - 1;
   const [mode, setMode] = useState<"slides" | "game">("slides");
+
+  // Level-specific metadata
+  const levelMetadata = {
+    "1": {
+      subtitle: "Level 1",
+      title: "Budgeting Basics – Visual Walkthrough",
+      description: "Move through each slide to see how budgeting changes the story of your money.",
+    },
+    "2": {
+      subtitle: "Level 2",
+      title: "Expenses & Goals – Visual Walkthrough",
+      description: "Learn how expenses and financial goals work together to build financial control.",
+    },
+  };
+
+  const metadata = levelMetadata[levelId as keyof typeof levelMetadata] || levelMetadata["1"];
 
   const handlePrevious = () => {
     setCurrentIndex((prev) => (prev > 0 ? prev - 1 : prev));
@@ -124,13 +148,13 @@ export default function LevelPage({
           <>
             <header className="text-center space-y-2">
               <p className="text-xs uppercase tracking-[0.2em] text-sky-300/80">
-                Level 1
+                {metadata.subtitle}
               </p>
               <h1 className="text-3xl md:text-4xl font-bold">
-                Budgeting Basics – Visual Walkthrough
+                {metadata.title}
               </h1>
               <p className="text-sm md:text-base text-slate-300">
-                Move through each slide to see how budgeting changes the story of your money.
+                {metadata.description}
               </p>
             </header>
 
@@ -171,16 +195,18 @@ export default function LevelPage({
           <>
             <header className="text-center space-y-2">
               <p className="text-xs uppercase tracking-[0.2em] text-emerald-300/80">
-                Level {currentLevel}
+                {metadata.subtitle}
               </p>
-              <h1 className="text-3xl md:text-4xl font-bold">Mini Game</h1>
+              <h1 className="text-3xl md:text-4xl font-bold">
+                {levelId === "1" ? "Mini Game" : "Mini Game: Fix the Budget"}
+              </h1>
               <p className="text-sm md:text-base text-slate-300">
                 Practice what you learned with this quick interactive game.
               </p>
             </header>
 
             <section className="space-y-6">
-              <Level1Game />
+              {getGameComponent()}
             </section>
 
             <section className="flex justify-center pt-4">
