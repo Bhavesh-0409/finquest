@@ -5,6 +5,9 @@ from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)
+SUPABASE_URL="https://qrconluweljaofvfdxqm.supabase.co"
+SUPABASE_SERVICE_ROLE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyY29ubHV3ZWxqYW9mdmZkeHFtIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2Nzk4NzM4NCwiZXhwIjoyMDgzNTYzMzg0fQ.k93smL9588CrYtJCsxaxke6rJbbb8q3pUZswPyjLEYg"
+ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyY29ubHV3ZWxqYW9mdmZkeHFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5ODczODQsImV4cCI6MjA4MzU2MzM4NH0.5MWw72E5OtQQ2eWYJaiunXFrMD4oJ3KhtwlQz4GyX2E"
 supabase: Client = create_client(SUPABASE_URL, ANON_KEY)
 
 

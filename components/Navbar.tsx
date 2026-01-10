@@ -112,6 +112,16 @@ export default function Navbar() {
           >
             Stock Market
           </Link>
+          <Link
+            href="/finance-news"
+            className={`px-3 py-1.5 rounded-full border transition ${
+              isActive("/finance-news")
+                ? "bg-white/10 text-white border-white/20 shadow-sm"
+                : "text-gray-300 hover:text-white hover:bg-white/10 border-transparent"
+            }`}
+          >
+            Finance News
+          </Link>
         </nav>
 
         {/* XP and Streak */}
